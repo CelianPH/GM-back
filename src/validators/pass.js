@@ -29,3 +29,7 @@ export const updatePassSchema = z.object({
 export const visitSchema = z.object({
   establishmentId: z.number().int().positive(),
 });
+
+export const scanSchema = z.object({
+  token: z.string().min(1),
+});

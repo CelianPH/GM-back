@@ -18,7 +18,12 @@ export const Establishment = sequelize.define(
       allowNull: false,
       defaultValue: 'restaurant',
     },
-
+    qrToken: {
+      type: DataTypes.STRING(64),
+      allowNull: true,
+      unique: true,
+      field: 'qr_token',
+    },
   },
   {
     tableName: 'establishments',
