@@ -25,3 +25,7 @@ export const updatePassSchema = z.object({
     .max(5)
     .optional(),
 });
+
+export const visitSchema = z.object({
+  establishmentId: z.number().int().positive(),
+});

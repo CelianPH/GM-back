@@ -1,6 +1,6 @@
 import { ZodError } from 'zod';
-import { updatePassSchema } from '../validators/pass.js';
-import { PassError, getPassMe, updatePassProfile } from '../services/pass.service.js';
+import { updatePassSchema, visitSchema } from '../validators/pass.js';
+import { PassError, getPassMe, updatePassProfile, recordVisit } from '../services/pass.service.js';
 
 function handleError(err, res) {
   if (err instanceof ZodError) {
@@ -36,6 +36,16 @@ export async function updateMe(req, res) {
   try {
     const input = updatePassSchema.parse(req.body);
     const data = await updatePassProfile(req.user.id, input);
+    return res.status(200).json(data);
+  } catch (err) {
+    return handleError(err, res);
+  }
+}
+
+export async function postVisit(req, res) {
+  try {
+    const { establishmentId } = visitSchema.parse(req.body);
+    const data = await recordVisit(req.user.id, establishmentId);
     return res.status(200).json(data);
   } catch (err) {
     return handleError(err, res);
