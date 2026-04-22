@@ -1,10 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
+import { env } from './config/env.js';
 import { testConnection } from './db.js';
-
-dotenv.config();
+import './models/index.js';
+import { authRouter } from './routes/auth.routes.js';
 
 const app = express();
 
@@ -12,16 +12,20 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.json({ message: 'GM-back API is running' });
 });
 
-const PORT = process.env.PORT || 3000;
+app.use('/auth', authRouter);
+
+app.use((err, _req, res, _next) => {
+  console.error('[error handler]', err);
+  res.status(500).json({ error: { code: 'INTERNAL', message: 'Erreur serveur.' } });
+});
 
 testConnection().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  app.listen(env.PORT, () => {
+    console.log(`✅ Server running on port ${env.PORT} (${env.NODE_ENV})`);
   });
 });
 
