@@ -5,6 +5,7 @@ import { env } from './config/env.js';
 import { testConnection } from './db.js';
 import './models/index.js';
 import { authRouter } from './routes/auth.routes.js';
+import { passRouter } from './routes/pass.routes.js';
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.get('/', (_req, res) => {
 });
 
 app.use('/auth', authRouter);
+app.use('/pass', passRouter);
 
 app.use((err, _req, res, _next) => {
   console.error('[error handler]', err);
