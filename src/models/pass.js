@@ -54,6 +54,16 @@ export const Pass = sequelize.define(
       defaultValue: DataTypes.NOW,
       field: 'member_since',
     },
+    searchCity: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      field: 'search_city',
+    },
+    searchRadiusKm: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      field: 'search_radius_km',
+    },
   },
   {
     tableName: 'passes',

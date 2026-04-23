@@ -1,0 +1,32 @@
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../db.js';
+
+export const Establishment = sequelize.define(
+  'Establishment',
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    name: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
+    type: {
+      type: DataTypes.ENUM('restaurant', 'hotel'),
+      allowNull: false,
+      defaultValue: 'restaurant',
+    },
+    qrToken: {
+      type: DataTypes.STRING(64),
+      allowNull: true,
+      unique: true,
+      field: 'qr_token',
+    },
+  },
+  {
+    tableName: 'establishments',
+    timestamps: false,
+  }
+);
