@@ -1,4 +1,5 @@
 import { sequelize, User, Pass, Level, Title, UserTaste, Establishment, UserVisit } from '../models/index.js';
+import { QueryTypes } from 'sequelize';
 import { checkAndProgressQuest } from './quest.service.js';
 
 export class PassError extends Error {
@@ -15,7 +16,7 @@ export function resolveLevel(experiencesCount, levels) {
     .sort((a, b) => b.minExperiences - a.minExperiences)[0];
 }
 
-function serialize({ user, pass, level, title, tastes }) {
+function serialize({ user, pass, level, title, tastes, restaurantsCount = 0, hotelsCount = 0, regionsCount = 0, badgesCount = 0 }) {
   return {
     user: {
       id: user.id,
@@ -30,6 +31,10 @@ function serialize({ user, pass, level, title, tastes }) {
       passNumber: pass.passNumber,
       memberSince: pass.memberSince,
       experiencesCount: pass.experiencesCount,
+      restaurantsCount,
+      hotelsCount,
+      regionsCount,
+      badgesCount,
       pointsTotal: pass.pointsTotal,
       searchCity: pass.searchCity,
       searchRadiusKm: pass.searchRadiusKm,
@@ -66,7 +71,26 @@ export async function getPassMe(userId) {
   const title = pass.titleId ? await Title.findByPk(pass.titleId) : null;
   const tastes = await UserTaste.findAll({ where: { userId } });
 
-  return serialize({ user, pass, level, title, tastes });
+  const [counts] = await sequelize.query(
+    `SELECT
+      SUM(e.type = 'restaurant') AS restaurantsCount,
+      SUM(e.type = 'lodging')    AS hotelsCount,
+      COUNT(DISTINCT e.region_id) AS regionsCount
+     FROM user_visits uv
+     JOIN establishments e ON e.id = uv.establishment_id
+     WHERE uv.user_id = :userId`,
+    { replacements: { userId }, type: QueryTypes.SELECT }
+  );
+  const restaurantsCount = Number(counts.restaurantsCount) || 0;
+  const hotelsCount = Number(counts.hotelsCount) || 0;
+  const regionsCount = Number(counts.regionsCount) || 0;
+
+  const [{ badgesCount }] = await sequelize.query(
+    'SELECT COUNT(*) AS badgesCount FROM user_badges WHERE user_id = :userId',
+    { replacements: { userId }, type: QueryTypes.SELECT }
+  );
+
+  return serialize({ user, pass, level, title, tastes, restaurantsCount, hotelsCount, regionsCount, badgesCount: Number(badgesCount) });
 }
 
 export async function updatePassProfile(userId, input) {
