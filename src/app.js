@@ -16,6 +16,7 @@ import { cuisineTypesRouter } from './routes/cuisineTypes.routes.js';
 
 const app = express();
 
+app.set('trust proxy', 'loopback');
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
