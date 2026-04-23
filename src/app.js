@@ -8,6 +8,11 @@ import { authRouter } from './routes/auth.routes.js';
 import { passRouter } from './routes/pass.routes.js';
 import { establishmentRouter } from './routes/establishment.routes.js';
 import { questRouter } from './routes/quest.routes.js';
+import { restaurantsRouter } from './routes/restaurants.routes.js';
+import { hotelsRouter } from './routes/hotels.routes.js';
+import { favoritesRouter } from './routes/favorites.routes.js';
+import { meEstablishmentRouter } from './routes/me-establishment.routes.js';
+import { cuisineTypesRouter } from './routes/cuisineTypes.routes.js';
 
 const app = express();
 
@@ -23,6 +28,11 @@ app.use('/auth', authRouter);
 app.use('/pass', passRouter);
 app.use('/establishments', establishmentRouter);
 app.use('/quests', questRouter);
+app.use('/restaurants', restaurantsRouter);
+app.use('/hotels', hotelsRouter);
+app.use('/me/favorites', favoritesRouter);
+app.use('/me/establishment', meEstablishmentRouter);
+app.use('/cuisine-types', cuisineTypesRouter);
 
 app.use((err, _req, res, _next) => {
   console.error('[error handler]', err);
