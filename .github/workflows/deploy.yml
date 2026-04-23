@@ -1,0 +1,48 @@
+name: Deploy Back
+
+on:
+  push:
+    branches: [deploy]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-back
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, gm-back]
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install deps (full, pour sequelize-cli)
+        run: npm ci
+
+      - name: Sync code to /opt/gm-back
+        run: |
+          rsync -av --delete \
+            --exclude node_modules \
+            --exclude .git \
+            --exclude .github \
+            --exclude .env \
+            ./ /opt/gm-back/
+
+      - name: Install prod deps in /opt/gm-back
+        working-directory: /opt/gm-back
+        run: npm ci --omit=dev
+
+      - name: Run migrations
+        working-directory: /opt/gm-back
+        env:
+          NODE_ENV: production
+        run: npx sequelize-cli db:migrate
+
+      - name: Restart service
+        run: sudo /bin/systemctl restart gm-back
