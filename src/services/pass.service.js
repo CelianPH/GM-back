@@ -1,4 +1,5 @@
 import { sequelize, User, Pass, Level, Title, UserTaste, Establishment, UserVisit } from '../models/index.js';
+import { checkAndProgressQuest } from './quest.service.js';
 
 export class PassError extends Error {
   constructor(code, message, status = 400) {
@@ -132,6 +133,7 @@ export async function recordVisit(userId, establishmentId) {
       passUpdates.levelId = newLevel.id;
     }
     await Pass.update(passUpdates, { where: { userId }, transaction });
+    await checkAndProgressQuest(userId, establishmentId, transaction);
   });
 
   const leveledUp = newLevel ? newLevel.id !== oldLevelId : false;
