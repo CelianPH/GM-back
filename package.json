@@ -8,7 +8,11 @@
     "start": "node src/app.js",
     "db:migrate": "npx sequelize-cli db:migrate",
     "db:seed": "npx sequelize-cli db:seed:all",
-    "db:rollback": "npx sequelize-cli db:migrate:undo"
+    "db:rollback": "npx sequelize-cli db:migrate:undo",
+    "scrape:restaurants": "node scripts/scraper/scrape-restaurants.js",
+    "scrape:hotels": "node scripts/scraper/scrape-hotels.js",
+    "scrape:all": "npm run scrape:restaurants && npm run scrape:hotels",
+    "seed:establishments": "node scripts/scraper/seed-establishments.js"
   },
   "keywords": [],
   "author": "",
