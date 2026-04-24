@@ -7,12 +7,21 @@ export const UPLOADS_ROOT = path.resolve(process.cwd(), 'uploads');
 
 fs.mkdirSync(path.join(UPLOADS_ROOT, 'establishments'), { recursive: true });
 
-const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+const ALLOWED_MIME = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/heic',
+  'image/heif',
+]);
 const EXT_FOR_MIME = {
   'image/jpeg': '.jpg',
   'image/png': '.png',
   'image/webp': '.webp',
   'image/gif': '.gif',
+  'image/heic': '.heic',
+  'image/heif': '.heif',
 };
 
 const storage = multer.diskStorage({
