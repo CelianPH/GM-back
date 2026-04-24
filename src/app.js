@@ -14,6 +14,7 @@ import { hotelsRouter } from './routes/hotels.routes.js';
 import { favoritesRouter } from './routes/favorites.routes.js';
 import { meEstablishmentRouter } from './routes/me-establishment.routes.js';
 import { cuisineTypesRouter } from './routes/cuisineTypes.routes.js';
+import { friendRouter } from './routes/friend.routes.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/hotels', hotelsRouter);
 app.use('/me/favorites', favoritesRouter);
 app.use('/me/establishment', meEstablishmentRouter);
 app.use('/cuisine-types', cuisineTypesRouter);
+app.use('/friends', friendRouter);
 
 app.use((err, _req, res, _next) => {
   console.error('[error handler]', err);
