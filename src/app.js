@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { env } from './config/env.js';
+import { UPLOADS_ROOT } from './middleware/upload.js';
 import { testConnection } from './db.js';
 import './models/index.js';
 import { authRouter } from './routes/auth.routes.js';
@@ -17,9 +18,11 @@ import { cuisineTypesRouter } from './routes/cuisineTypes.routes.js';
 const app = express();
 
 app.set('trust proxy', 'loopback');
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors());
 app.use(express.json());
+
+app.use('/uploads', express.static(UPLOADS_ROOT, { maxAge: '7d', fallthrough: false }));
 
 app.get('/', (_req, res) => {
   res.json({ message: 'GM-back API is running' });

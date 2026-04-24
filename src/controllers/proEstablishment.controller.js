@@ -1,10 +1,12 @@
 import { ZodError } from 'zod';
+import path from 'node:path';
 import { updateEstablishmentSchema, updateCoverSchema } from '../validators/proEstablishment.js';
 import {
   ProError,
   getMyEstablishment,
   updateMyEstablishment,
   updateCover,
+  ensureQrToken,
 } from '../services/proEstablishment.service.js';
 
 export function handleProError(err, res, scope) {
@@ -51,6 +53,35 @@ export async function postCover(req, res) {
   try {
     const { coverImageUrl } = updateCoverSchema.parse(req.body);
     const data = await updateCover(req.establishmentId, coverImageUrl);
+    return res.status(200).json(data);
+  } catch (err) {
+    return handleProError(err, res, 'pro-establishment');
+  }
+}
+
+export async function postQrCode(req, res) {
+  try {
+    const rotate = req.body?.rotate === true;
+    const data = await ensureQrToken(req.establishmentId, { rotate });
+    return res.status(200).json(data);
+  } catch (err) {
+    return handleProError(err, res, 'pro-establishment');
+  }
+}
+
+export async function postCoverUpload(req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        error: { code: 'NO_FILE', message: 'Aucun fichier fourni.' },
+      });
+    }
+    const relPath = path
+      .relative(path.resolve(process.cwd()), req.file.path)
+      .split(path.sep)
+      .join('/');
+    const publicUrl = `${req.protocol}://${req.get('host')}/${relPath}`;
+    const data = await updateCover(req.establishmentId, publicUrl);
     return res.status(200).json(data);
   } catch (err) {
     return handleProError(err, res, 'pro-establishment');

@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { QueryTypes } from 'sequelize';
 import {
   sequelize,
@@ -113,4 +114,17 @@ export async function updateMyEstablishment(establishmentId, patch) {
 
 export async function updateCover(establishmentId, coverImageUrl) {
   return updateMyEstablishment(establishmentId, { coverImageUrl });
+}
+
+export async function ensureQrToken(establishmentId, { rotate = false } = {}) {
+  const est = await loadEstablishmentFull(establishmentId);
+  if (!rotate && est.qrToken) {
+    const cuisineLabel = await fetchCuisineLabel(est.restaurantDetail?.cuisine_type_id);
+    return establishmentToProPayload(est, cuisineLabel);
+  }
+  const token = 'gm_' + crypto.randomBytes(16).toString('hex');
+  await est.update({ qrToken: token });
+  const fresh = await loadEstablishmentFull(establishmentId);
+  const cuisineLabel = await fetchCuisineLabel(fresh.restaurantDetail?.cuisine_type_id);
+  return establishmentToProPayload(fresh, cuisineLabel);
 }

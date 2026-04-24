@@ -6,6 +6,7 @@ import {
   deleteMyArticle,
 } from '../services/proArticle.service.js';
 import { handleProError } from './proEstablishment.controller.js';
+import { buildPublicUrl } from '../middleware/upload.js';
 
 export async function listArticles(req, res) {
   try {
@@ -42,6 +43,20 @@ export async function removeArticle(req, res) {
     const { id } = idParamSchema.parse(req.params);
     await deleteMyArticle(req.establishmentId, id);
     return res.status(204).send();
+  } catch (err) {
+    return handleProError(err, res, 'pro-article');
+  }
+}
+
+export async function uploadArticleImageHandler(req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        error: { code: 'NO_FILE', message: 'Aucun fichier fourni.' },
+      });
+    }
+    const mediaUrl = buildPublicUrl(req, req.file.path);
+    return res.status(200).json({ mediaUrl });
   } catch (err) {
     return handleProError(err, res, 'pro-article');
   }
