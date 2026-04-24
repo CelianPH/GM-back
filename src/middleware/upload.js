@@ -148,5 +148,11 @@ export function buildPublicUrl(req, filePath) {
     .relative(path.resolve(process.cwd()), resolved)
     .split(path.sep)
     .join('/');
-  return `${req.protocol}://${req.get('host')}/${relPath}`;
+  // Read X-Forwarded-Proto / Host ourselves instead of relying on Express's
+  // `trust proxy` preset — the `loopback` preset has known edge cases where
+  // req.protocol still returns http, which breaks mixed-content in the browser.
+  const forwardedProto = req.get('x-forwarded-proto');
+  const proto = (forwardedProto ? forwardedProto.split(',')[0].trim() : req.protocol) || 'http';
+  const host = req.get('x-forwarded-host') || req.get('host');
+  return `${proto}://${host}/${relPath}`;
 }
