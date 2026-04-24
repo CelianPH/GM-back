@@ -49,6 +49,28 @@ function applyDefined(target, source, mapping) {
   }
 }
 
+// Fallback: when the client patches the address but omits coordinates, re-geocode via
+// the French public address API so the map stays in sync. Failures are swallowed — we
+// still accept the text change rather than blocking the whole save.
+async function geocodeFR(query) {
+  if (!query) return null;
+  try {
+    const url =
+      'https://api-adresse.data.gouv.fr/search/?limit=1&q=' + encodeURIComponent(query);
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const feat = data?.features?.[0];
+    const coords = feat?.geometry?.coordinates;
+    if (!Array.isArray(coords) || coords.length !== 2) return null;
+    const [lng, lat] = coords;
+    if (typeof lat !== 'number' || typeof lng !== 'number') return null;
+    return { lat, lng };
+  } catch {
+    return null;
+  }
+}
+
 export async function updateMyEstablishment(establishmentId, patch) {
   const est = await loadEstablishmentFull(establishmentId);
 
@@ -64,7 +86,29 @@ export async function updateMyEstablishment(establishmentId, patch) {
     website: 'website',
     email: 'email',
     coverImageUrl: 'cover_image_url',
+    lat: 'lat',
+    lng: 'lng',
   });
+
+  // If the caller patched the address text but forgot to send coordinates, re-geocode
+  // from the final address so the map stays aligned with what was saved.
+  const addressTouched =
+    patch.address !== undefined ||
+    patch.city !== undefined ||
+    patch.postalCode !== undefined;
+  const coordsProvided = patch.lat !== undefined && patch.lng !== undefined;
+  if (addressTouched && !coordsProvided) {
+    const finalAddress = patch.address ?? est.address ?? '';
+    const finalPostal = patch.postalCode ?? est.postal_code ?? '';
+    const finalCity = patch.city ?? est.city ?? '';
+    const query = [finalAddress, finalPostal, finalCity].filter(Boolean).join(' ').trim();
+    const geo = await geocodeFR(query);
+    if (geo) {
+      baseChanges.lat = geo.lat;
+      baseChanges.lng = geo.lng;
+    }
+  }
+
   if (Object.keys(baseChanges).length > 0) {
     await est.update(baseChanges);
   }
